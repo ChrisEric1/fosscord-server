@@ -16,6 +16,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import fs from "fs";
 import { Payload, WebSocket } from "@fosscord/gateway";
 import { genVoiceToken } from "../util/SessionUtils";
 import { check } from "./instanceOf";
