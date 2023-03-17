@@ -37,6 +37,7 @@ import { Authentication, CORS } from "./middlewares/";
 import { BodyParser } from "./middlewares/BodyParser";
 import { ErrorHandler } from "./middlewares/ErrorHandler";
 import { initRateLimits } from "./middlewares/RateLimit";
+import TestClient from "./middlewares/TestClient";
 import { initTranslation } from "./middlewares/Translation";
 import { initInstance } from "./util/handlers/Instance";
 
@@ -137,6 +138,7 @@ export class FosscordServer extends Server {
 		app.use("/api", api); // allow unversioned requests
 
 		this.app.use(ErrorHandler);
+		TestClient(this.app);
 
 		Sentry.errorHandler(this.app);
 

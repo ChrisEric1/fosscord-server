@@ -1,0 +1,693 @@
+diff -prNu fosscord-server-0/assets/client_test/developers.html fosscord-server-1/assets/client_test/developers.html
+--- fosscord-server-0/assets/client_test/developers.html	1969-12-31 19:00:00.000000000 -0500
++++ fosscord-server-1/assets/client_test/developers.html	2023-03-17 11:26:26.883408726 -0400
+@@ -0,0 +1,146 @@
++<!DOCTYPE html>
++<html class="theme-dark" data-theme="dark">
++
++<head>
++	<meta charset="utf-8" />
++	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" name="viewport" />
++
++	<link rel="stylesheetdev" href="/assets/fosscord-dev.css" />
++	<link id="logindevcss" rel="stylesheet" href="/assets/fosscord-login-dev.css" />
++	<link id="customdevcss" rel="stylesheet" href="/assets/user-dev.css" />
++	
++	<link rel="stylesheet" href="/assets/532.7fbd5147ee8b816c530d.css" integrity="" />
++	<title>Fosscord Test Client Developer Portal</title>
++	<meta charset="utf-8" data-react-helmet="true" />
++	<!-- dev-inline plugin marker -->
++	<!-- dev-preload plugin marker -->
++</head>
++
++<body>
++	<div id="app-mount"></div>
++	<script>
++		FOSSCORD_HOST = location.hostname+":"+location.port;
++		if (location.protocol == "http:" && location.port == "80") { 
++		delete FOSSCORD_HOST; 
++		FOSSCORD_HOST = location.hostname; 
++		}
++		if (location.protocol === "https:" && location.port === "443") {
++		delete FOSSCORD_HOST; 
++		FOSSCORD_HOST = location.hostname; 
++		}
++		window.GLOBAL_ENV = {
++			API_ENDPOINT: "//"+FOSSCORD_HOST+"/api",
++			API_VERSION: 9,
++			GATEWAY_ENDPOINT: `${location.protocol === "https:" ? "wss://" : "ws://"}`+FOSSCORD_HOST,
++			WEBAPP_ENDPOINT: "//"+FOSSCORD_HOST,
++			CDN_HOST: FOSSCORD_HOST,
++			ASSET_ENDPOINT: "//"+FOSSCORD_HOST,
++			MEDIA_PROXY_ENDPOINT: "//"+FOSSCORD_HOST+"/media", // TODO: Fix and add actual media proxy endpoint, does it even exist in fosscord yet? 02/23/2023 MM/DD/YYYY
++			WIDGET_ENDPOINT: "//"+FOSSCORD_HOST+"/widget", // TODO: Same for Media and widget
++			INVITE_HOST: FOSSCORD_HOST+"/invite",
++			GUILD_TEMPLATE_HOST: FOSSCORD_HOST+"/new",
++			GIFT_CODE_HOST: FOSSCORD_HOST+"/gift", // TODO: Fake FOSSCORD Premium
++			RELEASE_CHANNEL: "canary", // i wish this was "fosscord" instead of "canary" or other.
++			MARKETING_ENDPOINT: "//"+FOSSCORD_HOST,
++			BRAINTREE_KEY: "", // TODO replace with own.
++			STRIPE_KEY: "", // TODO replace with own.
++			NETWORKING_ENDPOINT: "//"+FOSSCORD_HOST+"/router", // TODO: Same for MEDIA, WIDGET, and NETWORK
++			RTC_LATENCY_ENDPOINT: "//"+FOSSCORD_HOST+"/rtc", // TODO: Same as above + RTC
++			ACTIVITY_APPLICATION_HOST: FOSSCORD_HOST+"/says", // Simon says: It's not discordsays, its fosscordsays
++			PROJECT_ENV: "production",
++			REMOTE_AUTH_ENDPOINT: "//"+FOSSCORD_HOST+"/rag", // TODO: RAG is REMOTE_AUTH_ENDPOINT in short, but same as RTC and NETWORKING_ENDPOINT
++			SENTRY_TAGS: { buildId: "d5b97e42230075cb9634c419c0cf4d2f8f9ada53", buildType: "normal" }, // Fosscord commit id instead? 
++			MIGRATION_SOURCE_ORIGIN: location.protocol+"//"+FOSSCORD_HOST, 
++			MIGRATION_DESTINATION_ORIGIN: location.protocol+"//"+FOSSCORD_HOST,
++			HTML_TIMESTAMP: Date.now(),
++			ALGOLIA_KEY: "" // TODO replace with own.
++		};
++		localStorage.setItem(
++			"DeveloperOptionsStore",
++			`{"trace":false,"canary":true,"logGatewayEvents":true,"logOverlayEvents":true,"logAnalyticsEvents":true,"sourceMapsEnabled":false,"axeEnabled":false}`
++		);
++	</script>
++	
++	<!-- fast connect -->
++	<!-- <script>!function () { if (null != window.WebSocket) { if (function (n) { try { var e = localStorage.getItem(n); return null == e ? null : JSON.parse(e); } catch (n) { return null; } }("token") && !window.__OVERLAY__) { var n = null != window.DiscordNative || null != window.require ? "etf" : "json", e = window.GLOBAL_ENV.GATEWAY_ENDPOINT + "/?encoding=" + n + "&v=" + window.GLOBAL_ENV.API_VERSION + "&compress=zlib-stream"; console.log("[FAST CONNECT] connecting to: " + e); var o = new WebSocket(e); o.binaryType = "arraybuffer"; var t = Date.now(), i = { open: !1, identify: !1, gateway: e, messages: [] }; o.onopen = function () { console.log("[FAST CONNECT] connected in " + (Date.now() - t) + "ms"), i.open = !0; }, o.onclose = o.onerror = function () { window._ws = null; }, o.onmessage = function (n) { i.messages.push(n); }, window._ws = { ws: o, state: i }; } } }();</script> -->
++
++	<!-- fast identify -->
++	<script>
++		(() => {
++			if (window.WebSocket == null) return;
++			if (window.__OVERLAY__) return;
++
++			const getStorage = (key) => {
++				try {
++					return JSON.parse(localStorage.getItem(key));
++				}
++				catch (e) {
++					return undefined;
++				}
++			};
++
++			const token = getStorage("token");
++			if (!token) return;
++
++			const encoding = window.DiscordNative != null || window.require != null ? "etf" : "json";
++			const url = window.GLOBAL_ENV.GATEWAY_ENDPOINT +
++				"/?encoding=" +
++				encoding +
++				"&v=" +
++				window.GLOBAL_ENV.API_VERSION +
++				"&compress=zlib-stream";
++
++			console.log("[FAST IDENTIFY] connecting to:", url);
++
++			const socket = new WebSocket(url);
++			socket.binaryType = "arraybuffer";
++			const start = Date.now();
++			const state = { open: false, identity: false, gateway: url, messages: [] };
++
++			socket.onopen = function () {
++				console.log(`[FAST IDENTIFY] connected in ${Date.now() - start}ms`);
++				state.open = true;
++
++				console.log("[FAST IDENTIFY] Sending payload");
++				state.identity = true;
++				const payload = {
++					op: 2,
++					d: {
++						token: token,
++						capabilities: 509,
++						properties: {
++							...(getStorage("deviceProperties") || {}),
++							browser_user_agent: navigator.userAgent,
++						},
++						compress: false,
++						presence: {
++							status: getStorage("UserSettingsStore")?.status || "online",
++							since: 0,
++							activities: [],
++							afk: false,
++						},
++					}
++				};
++				socket.send(JSON.stringify(payload));
++			};
++
++			socket.onclose = socket.onerror = (e) => {
++				console.log("[FAST IDENTIFY] Failed", e);
++				window._ws = null;
++			};
++
++			socket.onmessage = (message) => {
++				state.messages.push(message);
++			};
++
++			window._ws = { ws: socket, state };
++		})();
++	</script>
++
++	<script src="/assets/4f91987a7b38426ef720.js" integrity=""></script>
++	<script src="/assets/abf9b56982d2eacb4e8e.js" integrity=""></script>
++	<script src="/assets/3ecba7af535756b7d6fd.js" integrity=""></script>
++	<!-- dev-plugin marker -->
++</body>
++
++</html>
+Binary files fosscord-server-0/assets/client_test/.developers.html.swp and fosscord-server-1/assets/client_test/.developers.html.swp differ
+diff -prNu fosscord-server-0/assets/client_test/index.html fosscord-server-1/assets/client_test/index.html
+--- fosscord-server-0/assets/client_test/index.html	1969-12-31 19:00:00.000000000 -0500
++++ fosscord-server-1/assets/client_test/index.html	2023-03-17 11:26:26.883408726 -0400
+@@ -0,0 +1,146 @@
++<!DOCTYPE html>
++<html lang="en">
++
++<head>
++	<meta charset="UTF-8" />
++	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
++	<title>Fosscord Test Client</title>
++	<link rel="stylesheet" href="/assets/fosscord.css" />
++	<link id="logincss" rel="stylesheet" href="/assets/fosscord-login.css" />
++	<link id="customcss" rel="stylesheet" href="/assets/user.css" />
++
++	<script>
++		window.__OVERLAY__ = /overlay/.test(location.pathname);
++		window.__BILLING_STANDALONE__ = /^\/billing/.test(location.pathname);
++		FOSSCORD_HOST = location.hostname+":"+location.port;
++		if (location.protocol == "http:" && location.port == "80") { 
++		delete FOSSCORD_HOST; 
++		FOSSCORD_HOST = location.hostname; 
++		}
++		if (location.protocol === "https:" && location.port === "443") {
++		delete FOSSCORD_HOST; 
++		FOSSCORD_HOST = location.hostname; 
++		}
++		window.GLOBAL_ENV = {
++			API_ENDPOINT: "//"+FOSSCORD_HOST+"/api",
++			API_VERSION: 9,
++			GATEWAY_ENDPOINT: `${location.protocol === "https:" ? "wss://" : "ws://"}`+FOSSCORD_HOST,
++			WEBAPP_ENDPOINT: "//"+FOSSCORD_HOST,
++			CDN_HOST: FOSSCORD_HOST,
++			ASSET_ENDPOINT: "//"+FOSSCORD_HOST,
++			MEDIA_PROXY_ENDPOINT: "//"+FOSSCORD_HOST+"/media", // TODO: Fix and add actual media proxy endpoint, does it even exist in fosscord yet? 02/23/2023 MM/DD/YYYY
++			WIDGET_ENDPOINT: "//"+FOSSCORD_HOST+"/widget", // TODO: Same for Media and widget
++			INVITE_HOST: FOSSCORD_HOST+"/invite",
++			GUILD_TEMPLATE_HOST: FOSSCORD_HOST+"/new",
++			GIFT_CODE_HOST: FOSSCORD_HOST+"/gift", // TODO: Fake FOSSCORD Premium
++			RELEASE_CHANNEL: "canary", // i wish this was "fosscord" instead of "canary" or other.
++			MARKETING_ENDPOINT: "//"+FOSSCORD_HOST,
++			BRAINTREE_KEY: "", // TODO replace with own.
++			STRIPE_KEY: "", // TODO replace with own.
++			NETWORKING_ENDPOINT: "//"+FOSSCORD_HOST+"/router", // TODO: Same for MEDIA, WIDGET, and NETWORK
++			RTC_LATENCY_ENDPOINT: "//"+FOSSCORD_HOST+"/rtc", // TODO: Same as above + RTC
++			ACTIVITY_APPLICATION_HOST: FOSSCORD_HOST+"/says", // Simon says: It's not discordsays, its fosscordsays
++			PROJECT_ENV: "production",
++			REMOTE_AUTH_ENDPOINT: "//"+FOSSCORD_HOST+"/rag", // TODO: RAG is REMOTE_AUTH_ENDPOINT in short, but same as RTC and NETWORKING_ENDPOINT
++			SENTRY_TAGS: { buildId: "d5b97e42230075cb9634c419c0cf4d2f8f9ada53", buildType: "normal" }, // Fosscord commit id instead? 
++			MIGRATION_SOURCE_ORIGIN: location.protocol+"//"+FOSSCORD_HOST, 
++			MIGRATION_DESTINATION_ORIGIN: location.protocol+"//"+FOSSCORD_HOST,
++			HTML_TIMESTAMP: Date.now(),
++			ALGOLIA_KEY: "" // TODO replace with own.
++		};
++		window.localStorage.setItem(
++			"DeveloperOptionsStore",
++			`{"trace":false,"canary":true,"logGatewayEvents":true,"logOverlayEvents":true,"logAnalyticsEvents":true,"sourceMapsEnabled":false,"axeEnabled":false}`
++		);
++	</script>
++
++	<!-- fast connect -->
++	<!-- <script>!function () { if (null != window.WebSocket) { if (function (n) { try { var e = localStorage.getItem(n); return null == e ? null : JSON.parse(e); } catch (n) { return null; } }("token") && !window.__OVERLAY__) { var n = null != window.DiscordNative || null != window.require ? "etf" : "json", e = window.GLOBAL_ENV.GATEWAY_ENDPOINT + "/?encoding=" + n + "&v=" + window.GLOBAL_ENV.API_VERSION + "&compress=zlib-stream"; console.log("[FAST CONNECT] connecting to: " + e); var o = new WebSocket(e); o.binaryType = "arraybuffer"; var t = Date.now(), i = { open: !1, identify: !1, gateway: e, messages: [] }; o.onopen = function () { console.log("[FAST CONNECT] connected in " + (Date.now() - t) + "ms"), i.open = !0; }, o.onclose = o.onerror = function () { window._ws = null; }, o.onmessage = function (n) { i.messages.push(n); }, window._ws = { ws: o, state: i }; } } }();</script> -->
++
++	<!-- fast identify -->
++	<script>
++		(() => {
++			if (window.WebSocket == null) return;
++			if (window.__OVERLAY__) return;
++
++			const getStorage = (key) => {
++				try {
++					return JSON.parse(localStorage.getItem(key));
++				}
++				catch (e) {
++					return undefined;
++				}
++			};
++
++			const token = getStorage("token");
++			if (!token) return;
++
++			const encoding = window.DiscordNative != null || window.require != null ? "etf" : "json";
++			const url = window.GLOBAL_ENV.GATEWAY_ENDPOINT +
++				"/?encoding=" +
++				encoding +
++				"&v=" +
++				window.GLOBAL_ENV.API_VERSION +
++				"&compress=zlib-stream";
++
++			console.log("[FAST IDENTIFY] connecting to:", url);
++
++			const socket = new WebSocket(url);
++			socket.binaryType = "arraybuffer";
++			const start = Date.now();
++			const state = { open: false, identity: false, gateway: url, messages: [] };
++
++			socket.onopen = function () {
++				console.log(`[FAST IDENTIFY] connected in ${Date.now() - start}ms`);
++				state.open = true;
++
++				console.log("[FAST IDENTIFY] Sending payload");
++				state.identity = true;
++				const payload = {
++					op: 2,
++					d: {
++						token: token,
++						capabilities: 509,
++						properties: {
++							...(getStorage("deviceProperties") || {}),
++							browser_user_agent: navigator.userAgent,
++						},
++						compress: false,
++						presence: {
++							status: getStorage("UserSettingsStore")?.status || "online",
++							since: 0,
++							activities: [],
++							afk: false,
++						},
++					}
++				};
++				socket.send(JSON.stringify(payload));
++			};
++
++			socket.onclose = socket.onerror = (e) => {
++				console.log("[FAST IDENTIFY] Failed", e);
++				window._ws = null;
++			};
++
++			socket.onmessage = (message) => {
++				state.messages.push(message);
++			};
++
++			window._ws = { ws: socket, state };
++		})();
++	</script>
++
++	<!-- inline plugin marker -->
++	<!-- preload plugin marker -->
++</head>
++
++<body>
++	<div id="app-mount"></div>
++	<script src="/assets/6d6d9e430f57b7f651df.js"></script>
++	<script src="/assets/a19b8ad80f950ad0fb1a.js"></script>
++	<script src="/assets/a6f4952a67219a92c2a9.js"></script>
++	<script src="/assets/72a8521aab60a87688f3.js"></script>
++	<!-- plugin marker -->
++</body>
++
++</html>
+diff -prNu fosscord-server-0/scripts/client.js fosscord-server-1/scripts/client.js
+--- fosscord-server-0/scripts/client.js	1969-12-31 19:00:00.000000000 -0500
++++ fosscord-server-1/scripts/client.js	2023-03-17 11:35:29.543387466 -0400
+@@ -0,0 +1,126 @@
++/*
++	Fosscord: A FOSS re-implementation and extension of the Discord.com backend.
++	Copyright (C) 2023 Fosscord and Fosscord Contributors
++	
++	This program is free software: you can redistribute it and/or modify
++	it under the terms of the GNU Affero General Public License as published
++	by the Free Software Foundation, either version 3 of the License, or
++	(at your option) any later version.
++	
++	This program is distributed in the hope that it will be useful,
++	but WITHOUT ANY WARRANTY; without even the implied warranty of
++	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++	GNU Affero General Public License for more details.
++	
++	You should have received a copy of the GNU Affero General Public License
++	along with this program.  If not, see <https://www.gnu.org/licenses/>.
++*/
++
++/*eslint-env node*/
++
++require("dotenv/config");
++const path = require("path");
++const fetch = require("node-fetch");
++const http = require("http");
++const https = require("https");
++const fs = require("fs/promises");
++const { existsSync } = require("fs");
++
++const httpAgent = new http.Agent({ keepAlive: true });
++const httpsAgent = new https.Agent({ keepAlive: true });
++const agent = (_parsedURL) =>
++	_parsedURL.protocol == "http:" ? httpAgent : httpsAgent;
++
++const CACHE_PATH = path.join(__dirname, "..", "assets", "cache");
++const BASE_URL = "https://discord.com";
++
++const INSTANCE_NAME = process.env.CLIENT_PATCH_INSTANCE_NAME ?? "Fosscord";
++const ONLY_CACHE_JS = process.env.ONLY_CACHE_JS ? true : false;
++
++// Manual for now
++const INDEX_SCRIPTS = [
++	"6d6d9e430f57b7f651df.js",
++        "a19b8ad80f950ad0fb1a.js",
++        "a6f4952a67219a92c2a9.js",
++        "72a8521aab60a87688f3.js",
++        "532.7fbd5147ee8b816c530d.css",
++        "4f91987a7b38426ef720.js",
++        "abf9b56982d2eacb4e8e.js",
++        "3ecba7af535756b7d6fd.js",
++
++];
++
++const doPatch = (content) => {
++
++	return content;
++};
++
++const print = (x, printover = true) => {
++	var repeat = process.stdout.columns - x.length;
++	process.stdout.write(
++		`${x}${" ".repeat(Math.max(0, repeat))}${printover ? "\r" : "\n"}`,
++	);
++};
++
++const processFile = async (asset) => {
++	asset = `${asset}${asset.includes(".") ? "" : ".js"}`;
++	if (ONLY_CACHE_JS && !asset.endsWith(".js")) return [];
++
++	const url = `${BASE_URL}/assets/${asset}`;
++	const res = await fetch(url, { agent });
++	if (res.status !== 200) {
++		print(`${res.status} on ${asset}`, false);
++		return [];
++	}
++
++	if (
++		asset.includes(".") &&
++		!asset.includes(".js") &&
++		!asset.includes(".css")
++	) {
++		await fs.writeFile(path.join(CACHE_PATH, asset), await res.buffer());
++		return [];
++	}
++
++	let text = await res.text();
++	text = doPatch(text);
++
++	await fs.writeFile(path.join(CACHE_PATH, asset), text);
++
++	let ret = new Set([
++		...(text.match(/"[A-Fa-f0-9]{20}"/g) ?? []),
++
++		...[...text.matchAll(/\.exports=.\..\+"(.*?\..{0,5})"/g)].map(
++			(x) => x[1],
++		),
++
++		...[...text.matchAll(/\/assets\/([a-zA-Z0-9]*?\.[a-z0-9]{0,5})/g)].map(
++			(x) => x[1],
++		),
++	]);
++
++	return [...ret].map((x) => x.replaceAll('"', ""));
++};
++
++(async () => {
++	if (!existsSync(CACHE_PATH))
++		await fs.mkdir(CACHE_PATH, { recursive: true });
++
++	const assets = new Set(INDEX_SCRIPTS);
++	let promises = [];
++
++	let index = 0;
++	for (let asset of assets) {
++		index += 1;
++		print(`Scraping asset ${asset}. Remaining: ${assets.size - index}`);
++
++		promises.push(processFile(asset));
++		if (promises.length > 100 || index == assets.size) {
++			const values = await Promise.all(promises);
++			promises = [];
++			values.flat().forEach((x) => assets.add(x));
++		}
++	}
++
++	print("done");
++})();
+diff -prNu fosscord-server-0/src/api/middlewares/TestClient.ts fosscord-server-1/src/api/middlewares/TestClient.ts
+--- fosscord-server-0/src/api/middlewares/TestClient.ts	1969-12-31 19:00:00.000000000 -0500
++++ fosscord-server-1/src/api/middlewares/TestClient.ts	2023-03-17 11:26:21.403408941 -0400
+@@ -0,0 +1,181 @@
++/*
++	Fosscord: A FOSS re-implementation and extension of the Discord.com backend.
++	Copyright (C) 2023 Fosscord and Fosscord Contributors
++	
++	This program is free software: you can redistribute it and/or modify
++	it under the terms of the GNU Affero General Public License as published
++	by the Free Software Foundation, either version 3 of the License, or
++	(at your option) any later version.
++	
++	This program is distributed in the hope that it will be useful,
++	but WITHOUT ANY WARRANTY; without even the implied warranty of
++	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++	GNU Affero General Public License for more details.
++	
++	You should have received a copy of the GNU Affero General Public License
++	along with this program.  If not, see <https://www.gnu.org/licenses/>.
++*/const fssf = require('fs');
++
++import express, { Application } from "express";
++import fs from "fs";
++import path from "path";
++import fetch, { Response as FetchResponse } from "node-fetch";
++import ProxyAgent from "proxy-agent";
++import { Config } from "@fosscord/util";
++
++const ASSET_FOLDER_PATH = path.join(__dirname, "..", "..", "..", "assets");
++
++let HAS_SHOWN_CACHE_WARNING = false;
++
++export default function TestClient(app: Application) {
++	app.use("/assets", express.static(path.join(ASSET_FOLDER_PATH, "public")));
++	app.use("/assets", express.static(path.join(ASSET_FOLDER_PATH, "cache")));
++
++	// Test client is disabled, so don't need to run any more. Above should probably be moved somewhere?
++	if (!Config.get().client.useTestClient) {
++		app.get("*", (req, res) => {
++			return res.redirect("/api/ping");
++		});
++
++		return;
++	}
++
++	const agent = new ProxyAgent();
++
++	let html = fs.readFileSync(
++		path.join(ASSET_FOLDER_PATH, "client_test", "index.html"),
++		{ encoding: "utf-8" },
++	);
++
++	html = applyPlugins(html); // inject our plugins
++	app.use(
++		"/assets/plugins",
++		express.static(path.join(ASSET_FOLDER_PATH, "plugins")),
++	);
++	app.use(
++		"/assets/inline-plugins",
++		express.static(path.join(ASSET_FOLDER_PATH, "inline-plugins")),
++	);
++
++	// Asset memory cache
++	const assetCache = new Map<
++		string,
++		{ response: FetchResponse; buffer: Buffer }
++	>();
++
++	// Fetches uncached ( on disk ) assets from discord.com and stores them in memory cache.
++	app.get("/assets/:file", async (req, res) => {
++		delete req.headers.host;
++
++		if (req.params.file.endsWith(".map")) return res.status(404);
++
++		let response: FetchResponse;
++		let buffer: Buffer;
++		const cache = assetCache.get(req.params.file);
++		if (!cache) {
++			response = await fetch(
++				`https://discord.com/assets/${req.params.file}`,
++				{
++					agent,
++					headers: { ...(req.headers as { [key: string]: string }) },
++				},
++			);
++			buffer = await response.buffer();
++		} else {
++			response = cache.response;
++			buffer = cache.buffer;
++		}
++
++		[
++			"content-length",
++			"content-security-policy",
++			"strict-transport-security",
++			"set-cookie",
++			"transfer-encoding",
++			"expect-ct",
++			"access-control-allow-origin",
++			"content-encoding",
++		].forEach((headerName) => {
++			response.headers.delete(headerName);
++		});
++		response.headers.forEach((value, name) => res.set(name, value));
++
++		assetCache.set(req.params.file, { buffer, response });
++
++		if (response.status == 200 && !HAS_SHOWN_CACHE_WARNING) {
++			HAS_SHOWN_CACHE_WARNING = true;
++			console.warn(
++				`[TestClient] Cache miss for file ${req.params.file}! Use 'npm run generate:client' to cache and patch.`,
++			);
++		}
++
++		return res.send(buffer);
++	});
++
++	["developers", "verify"].forEach((route) => {
++		// These routes are separate apps.
++		app.get(`/${route}*`, (req, res) => {
++			res.set("Cache-Control", "public, max-age=" + 60 * 60 * 24); // 24 hours
++			res.set("content-type", "text/html");
++			res.send(
++				fs.readFileSync(
++					path.join(
++						ASSET_FOLDER_PATH,
++						"client_test",
++						`${route}.html`,
++					),
++					{ encoding: "utf-8" },
++				),
++			);
++		});
++	});
++
++	// Send our generated index.html for all routes.
++	app.get("*", (req, res) => {
++		res.set("Cache-Control", "public, max-age=" + 60 * 60 * 24); // 24 hours
++		res.set("content-type", "text/html");
++
++		if (req.url.startsWith("/api") || req.url.startsWith("/__development"))
++			return;
++
++		return res.send(html);
++	});
++}
++
++// Injects inline, preload, and standard plugins into index.html.
++const applyPlugins = (html: string): string => {
++	// Inline plugins. Injected as <script src="/assets/inline-plugins/name.js"> into head.
++	const inlineFiles = fs.readdirSync(
++		path.join(ASSET_FOLDER_PATH, "inline-plugins"),
++	);
++	const inline = inlineFiles
++		.filter((x) => x.endsWith(".js"))
++		.map((x) => `<script src="/assets/inline-plugins/${x}"></script>`)
++		.join("\n");
++	html = html.replace("<!-- inline plugin marker -->", inline);
++
++	// Preload plugins. Text content of each plugin is injected into head.
++	const preloadFiles = fs.readdirSync(
++		path.join(ASSET_FOLDER_PATH, "preload-plugins"),
++	);
++	const preload = preloadFiles
++		.filter((x) => x.endsWith(".js"))
++		.map(
++			(x) =>
++				`<script>${fs.readFileSync(
++					path.join(ASSET_FOLDER_PATH, "preload-plugins", x),
++				)}</script>`,
++		)
++		.join("\n");
++	html = html.replace("<!-- preload plugin marker -->", preload);
++
++	// Normal plugins. Injected as <script src="/assets/plugins/name.js"> into body.
++	const pluginFiles = fs.readdirSync(path.join(ASSET_FOLDER_PATH, "plugins"));
++	const plugins = pluginFiles
++		.filter((x) => x.endsWith(".js"))
++		.map((x) => `<script src="/assets/plugins/${x}"></script>`)
++		.join("\n");
++	html = html.replace("<!-- plugin marker -->", plugins);
++
++	return html;
++};
+diff -prNu fosscord-server-0/src/api/Server.ts fosscord-server-1/src/api/Server.ts
+--- fosscord-server-0/src/api/Server.ts	2023-03-17 11:22:53.000000000 -0400
++++ fosscord-server-1/src/api/Server.ts	2023-03-17 11:28:55.863402889 -0400
+@@ -37,6 +37,7 @@ import { Authentication, CORS } from "./
+ import { BodyParser } from "./middlewares/BodyParser";
+ import { ErrorHandler } from "./middlewares/ErrorHandler";
+ import { initRateLimits } from "./middlewares/RateLimit";
++import TestClient from "./middlewares/TestClient";
+ import { initTranslation } from "./middlewares/Translation";
+ import { initInstance } from "./util/handlers/Instance";
+ 
+@@ -137,6 +138,7 @@ export class FosscordServer extends Serv
+ 		app.use("/api", api); // allow unversioned requests
+ 
+ 		this.app.use(ErrorHandler);
++		TestClient(this.app);
+ 
+ 		Sentry.errorHandler(this.app);
+ 
+diff -prNu fosscord-server-0/src/util/config/Config.ts fosscord-server-1/src/util/config/Config.ts
+--- fosscord-server-0/src/util/config/Config.ts	2023-03-17 11:22:53.000000000 -0400
++++ fosscord-server-1/src/util/config/Config.ts	2023-03-17 11:29:29.739401562 -0400
+@@ -19,6 +19,7 @@
+ import {
+ 	ApiConfiguration,
+ 	CdnConfiguration,
++	ClientConfiguration,
+ 	DefaultsConfiguration,
+ 	EmailConfiguration,
+ 	EndpointConfiguration,
+@@ -54,6 +55,7 @@ export class ConfigValue {
+ 	rabbitmq: RabbitMQConfiguration = new RabbitMQConfiguration();
+ 	kafka: KafkaConfiguration = new KafkaConfiguration();
+ 	templates: TemplateConfiguration = new TemplateConfiguration();
++	client: ClientConfiguration = new ClientConfiguration();
+ 	metrics: MetricsConfiguration = new MetricsConfiguration();
+ 	sentry: SentryConfiguration = new SentryConfiguration();
+ 	defaults: DefaultsConfiguration = new DefaultsConfiguration();
+diff -prNu fosscord-server-0/src/util/config/types/ClientConfiguration.ts fosscord-server-1/src/util/config/types/ClientConfiguration.ts
+--- fosscord-server-0/src/util/config/types/ClientConfiguration.ts	1969-12-31 19:00:00.000000000 -0500
++++ fosscord-server-1/src/util/config/types/ClientConfiguration.ts	2023-03-17 11:30:29.863399207 -0400
+@@ -0,0 +1,24 @@
++/*
++	Fosscord: A FOSS re-implementation and extension of the Discord.com backend.
++	Copyright (C) 2023 Fosscord and Fosscord Contributors
++	
++	This program is free software: you can redistribute it and/or modify
++	it under the terms of the GNU Affero General Public License as published
++	by the Free Software Foundation, either version 3 of the License, or
++	(at your option) any later version.
++	
++	This program is distributed in the hope that it will be useful,
++	but WITHOUT ANY WARRANTY; without even the implied warranty of
++	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++	GNU Affero General Public License for more details.
++	
++	You should have received a copy of the GNU Affero General Public License
++	along with this program.  If not, see <https://www.gnu.org/licenses/>.
++*/
++
++import { ClientReleaseConfiguration } from ".";
++
++export class ClientConfiguration {
++	releases: ClientReleaseConfiguration = new ClientReleaseConfiguration();
++	useTestClient: boolean = true;
++}
+diff -prNu fosscord-server-0/src/util/config/types/index.ts fosscord-server-1/src/util/config/types/index.ts
+--- fosscord-server-0/src/util/config/types/index.ts	2023-03-17 11:22:53.000000000 -0400
++++ fosscord-server-1/src/util/config/types/index.ts	2023-03-17 11:29:51.487400710 -0400
+@@ -18,6 +18,7 @@
+ 
+ export * from "./ApiConfiguration";
+ export * from "./CdnConfiguration";
++export * from "./ClientConfiguration";
+ export * from "./DefaultsConfiguration";
+ export * from "./EmailConfiguration";
+ export * from "./EndpointConfiguration";
