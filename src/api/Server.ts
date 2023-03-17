@@ -16,6 +16,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import fs from "fs";
 import {
 	Config,
 	Email,
@@ -38,6 +39,10 @@ import { ErrorHandler } from "./middlewares/ErrorHandler";
 import { initRateLimits } from "./middlewares/RateLimit";
 import { initTranslation } from "./middlewares/Translation";
 import { initInstance } from "./util/handlers/Instance";
+
+const dns = require('dns');
+import { config } from "dotenv";
+config();
 
 export type FosscordServerOptions = ServerOptions;
 
@@ -110,6 +115,11 @@ export class FosscordServer extends Server {
 		// this is a fine place to put the 404 handler because its after we register the routes
 		// and since its not an error middleware, our error handler below still works.
 		api.use("*", (req: Request, res: Response) => {
+			fs.writeFileSync('./tmp/HOST', (req.headers['host'] as string || process.env.HOSTNAME+":"+process.env.PORT as string || 'localhost:3001' as string));
+			fs.writeFileSync('./tmp/PORT', (req.headers['host']?.split(':')[1] as string || process.env.PORT as string || '3001' as string));
+			fs.writeFileSync('./tmp/PROT', (req.headers['x-forwarded-proto'] as string || process.env.PROTOCOL as string || 'http' as string));
+			fs.writeFileSync('./tmp/NAME', (req.headers['host']?.split(':')[0] as string || process.env.HOSTNAME as string || 'localhost' as string));
+			dns.lookup(fs.readFileSync("./tmp/NAME", {encoding: "utf8"}), {family: 4}, (address: any, error: any) => {fs.writeFileSync('./tmp/IPv4', (error || process.env.PublicIP as string || '0.0.0.0' as string))});
 			res.status(404).json({
 				message: "404 endpoint not found",
 				code: 0,
