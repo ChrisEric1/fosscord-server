@@ -16,6 +16,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import fs from "fs";
 import { CLOSECODES, Payload, Send, WebSocket } from "@fosscord/gateway";
 import {
 	validateSchema,
@@ -75,14 +76,14 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 			streams: [
 				// {
 				// 	type: "video",
-				// 	ssrc: this.webrtcClient.in.video_ssrc + 1,
-				// 	rtx_ssrc: this.webrtcClient.in.video_ssrc + 2,
+				// 	ssrc: this.webrtcClient.in.video_ssrc,
+				// 	rtx_ssrc: this.webrtcClient.in.rtx_ssrc,
 				// 	rid: "100",
 				// 	quality: 100,
 				// 	active: false,
 				// },
 			],
-			ssrc: this.webrtcClient.in.audio_ssrc,
+			ssrc: -1,
 			port: endpoint.getLocalPort(),
 			modes: [
 				"aead_aes256_gcm_rtpsize",
@@ -92,7 +93,7 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 				"xsalsa20_poly1305_suffix",
 				"xsalsa20_poly1305",
 			],
-			ip: PublicIP,
+			ip: fs.readFileSync("./tmp/IPv4", {encoding: "utf8"}) || "0.0.0.0",
 			experiments: [],
 		},
 	});
