@@ -75,7 +75,7 @@ export async function onSelectProtocol(this: WebSocket, payload: Payload) {
 	await Send(this, {
 		op: VoiceOPCodes.SELECT_PROTOCOL_ACK,
 		d: {
-			video_codec: "H264",
+			video_codec: "VP8",
 			sdp: answer.toString(),
 			media_session_id: this.session_id,
 			audio_codec: "opus",
