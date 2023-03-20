@@ -26,7 +26,7 @@ import MediaServer, {
 import SemanticSDP from "semantic-sdp";
 MediaServer.enableLog(true);
 
-export const PublicIP = process.env.PUBLIC_IP || fs.readFileSync("./tmp/NAME", {encoding: "utf8"}) || "0.0.0.0";
+export const PublicIP = process.env.PUBLIC_IP || fs.readFileSync("./tmp/IPv4", {encoding: "utf8"}) || "0.0.0.0";
 
 try {
 	const range = process.env.WEBRTC_PORT_RANGE || fs.readFileSync("./tmp/PORT", {encoding: "utf8"}) + "-" +  fs.readFileSync("./tmp/PORT", {encoding: "utf8"}) || "1024-65535";
