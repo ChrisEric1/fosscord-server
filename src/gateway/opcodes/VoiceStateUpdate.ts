@@ -134,7 +134,7 @@ export async function onVoiceStateUpdate(this: WebSocket, data: Payload) {
 			data: {
 				token: voiceState.token,
 				guild_id: voiceState.guild_id,
-				endpoint: fs.readFileSync("./tmp/HOST", {encoding: "utf8"}) + "/voice" || guildRegion.endpoint + "/voice",
+				endpoint: fs.readFileSync("./tmp/HOST", {encoding: "utf8"}) + "/voice" || "localhost:3001/voice" || guildRegion.endpoint + "/voice",
 			},
 			user_id: this.user_id,
 		} as VoiceServerUpdateEvent);
